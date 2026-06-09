@@ -1,68 +1,49 @@
-<!DOCTYPE html>
-<html lang="fr-FR">
+<?php require "header.php"; ?>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+<h1>Films TMDB</h1>
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Rechercher un film...">
+    <button id="searchBtn">🔍</button>
+</div>
 
-    <title>Kultrack</title>
-</head>
 
-<body>
+<div class="controls">
+    <label for="sort">Trier par :</label>
+    <select id="sort">
+        <option value="release_date.desc">Date ↓</option>
+        <option value="release_date.asc">Date ↑</option>
+        <option value="popularity.desc">Popularité ↓</option>
+        <option value="popularity.asc">Popularité ↑</option>
+        <option value="vote_average.desc">Note ↓</option>
+        <option value="vote_average.asc">Note ↑</option>
+    </select>
 
-    <?php require "header.php";?>
+    <label for="genre">Genre :</label>
+    <select id="genre">
+        <option value="">Tous</option>
+        <option value="28">Action</option>
+        <option value="35">Comédie</option>
+        <option value="27">Horreur</option>
+        <option value="16">Animation</option>
+        <option value="10749">Romance</option>
+        <option value="878">Science-fiction</option>
+    </select>
+</div>
 
-    <h1>Films TMDB</h1>
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Rechercher un film...">
-        <button id="searchBtn">🔍</button>
+<div class="pagination">
+    <button id="prevPage">◀ Précédent</button>
+    <span id="pageNumber">Page 1</span>
+    <button id="nextPage">Suivant ▶</button>
+</div>
+
+<div id="movies" class="movies-grid"></div>
+
+<div id="popup" class="popup">
+    <div class="popup-content">
+        <span id="closePopup" class="close">&times;</span>
+        <h2 id="popupTitle"></h2>
+        <p id="popupOverview"></p>
     </div>
+</div>
 
-
-    <div class="controls">
-        <label for="sort">Trier par :</label>
-        <select id="sort">
-            <option value="release_date.desc">Date ↓</option>
-            <option value="release_date.asc">Date ↑</option>
-            <option value="popularity.desc">Popularité ↓</option>
-            <option value="popularity.asc">Popularité ↑</option>
-            <option value="vote_average.desc">Note ↓</option>
-            <option value="vote_average.asc">Note ↑</option>
-        </select>
-
-        <label for="genre">Genre :</label>
-        <select id="genre">
-            <option value="">Tous</option>
-            <option value="28">Action</option>
-            <option value="35">Comédie</option>
-            <option value="27">Horreur</option>
-            <option value="16">Animation</option>
-            <option value="10749">Romance</option>
-            <option value="878">Science-fiction</option>
-        </select>
-    </div>
-
-    <div class="pagination">
-        <button id="prevPage">◀️ Précédent</button>
-        <span id="pageNumber">Page 1</span>
-        <button id="nextPage">Suivant ▶️</button>
-    </div>
-
-    <div id="movies" class="movies-grid"></div>
-
-    <div id="popup" class="popup">
-        <div class="popup-content">
-            <span id="closePopup" class="close">&times;</span>
-            <h2 id="popupTitle"></h2>
-            <p id="popupOverview"></p>
-        </div>
-    </div>
-
-
-    <script src="script.js"></script>
-</body>
-
-</html>
+<?php require "footer.php"; ?>
