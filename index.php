@@ -13,6 +13,8 @@
 
 <body>
 
+    <?php require "header.php";?>
+
     <h1>Films TMDB</h1>
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Rechercher un film...">
