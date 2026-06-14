@@ -82,9 +82,9 @@ header.navbar {
   height: 64px;
   background: var(--c-bg);
   border-bottom: 0.5px solid var(--c-border);
-  display: flex;
+  display: grid;
+  grid-template-columns: 250px auto 250px;
   align-items: center;
-  justify-content: space-between;
   padding: 0 40px;
   top: 0;
   z-index: 100;
@@ -97,6 +97,7 @@ header.navbar {
   color: var(--c-text);
   display: flex;
   align-items: center;
+  justify-self: start;
 }
 
 .navbar__logo span {
@@ -113,6 +114,7 @@ header.navbar {
 
 .navbar__links {
   display: flex;
+  justify-content: center;
   gap: 1.75rem;
 }
 
@@ -131,6 +133,7 @@ header.navbar {
 
 .navbar__actions {
   display: flex;
+  justify-self: end;
   gap: .75rem;
 }
 
