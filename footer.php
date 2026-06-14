@@ -1,6 +1,7 @@
+</main>
 <footer class="footer">
   <div class="footer__inner">
-    
+
     <div class="footer__col footer__col--left">
       <img src="assets/icons/logo.svg" alt="Logo Kultrack" class="footer__logo-icon">
       <div class="footer__brand">

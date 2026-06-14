@@ -13,7 +13,7 @@ $page_actuelle = basename($_SERVER['PHP_SELF'], '.php');
   <title><?= $page_title ?? 'Kultrack' ?></title>
 </head>
 
-<body>
+<body data-type="<?= $_GET['type'] ?? 'all' ?>">
 
   <header class="navbar">
 
@@ -49,8 +49,8 @@ $page_actuelle = basename($_SERVER['PHP_SELF'], '.php');
           <?= $_SESSION['user_initials'] ?>
         </a>
       <?php else: ?>
-        <a href="./login.php" class="btn-outline btn-lg">Connexion</a>
-        <a href="./register.php" class="btn-primary btn-lg">S'inscrire</a>
+        <a href="./login.php" class="btn-outline btn-xs">Connexion</a>
+        <a href="./register.php" class="btn-primary btn-xs">S'inscrire</a>
       <?php endif; ?>
     </div>
 

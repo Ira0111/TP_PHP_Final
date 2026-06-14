@@ -411,6 +411,7 @@ footer.footer {
   background: var(--c-bg);
   border-top: 0.5px solid var(--c-border);
   padding: 10px 40px;
+  margin-top: auto;
 }
 
 .footer__inner {
@@ -508,6 +509,111 @@ footer.footer {
 .badge--dropped {
   background: #FDEAEA;
   color: #A32D2D;
+}
+
+.catalogue-search {
+  display: flex;
+  gap: .75rem;
+}
+
+.catalogue-search input {
+  padding: 10px 14px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  width: 220px;
+}
+
+.catalogue-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.filter {
+    padding: 10px 18px;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid var(--c-border);
+    background: var(--c-surface-2);
+    transition: var(--t);
+    cursor: pointer;
+}
+
+.filter--film {
+    border-color: var(--c-film);
+    color: var(--c-film);
+    background: var(--c-film-bg);
+}
+
+.filter--serie {
+    border-color: var(--c-serie);
+    color: var(--c-serie);
+    background: var(--c-serie-bg);
+}
+
+.filter--anime {
+    border-color: var(--c-anime);
+    color: var(--c-anime);
+    background: var(--c-anime-bg);
+}
+
+.filter--jeu {
+    border-color: var(--c-jeu);
+    color: var(--c-jeu);
+    background: var(--c-jeu-bg);
+}
+
+.filter--livre {
+    border-color: var(--c-livre);
+    color: var(--c-livre);
+    background: var(--c-livre-bg);
+}
+
+/* Filtre de base actif */
+.filter.active {
+    background: var(--c-text-muted);
+    color: white;
+    border-color: var(--c-text-muted);
+    transform: translateY(-4px);
+}
+
+
+.filter.active.filter--film {
+    background: var(--c-film);
+    color: white;
+    border-color: var(--c-film);
+}
+
+.filter.active.filter--serie {
+    background: var(--c-serie);
+    color: white;
+    border-color: var(--c-serie);
+}
+
+.filter.active.filter--anime {
+    background: var(--c-anime);
+    color: white;
+    border-color: var(--c-anime);
+}
+
+.filter.active.filter--jeu {
+    background: var(--c-jeu);
+    color: white;
+    border-color: var(--c-jeu);
+}
+
+.filter.active.filter--livre {
+    background: var(--c-livre);
+    color: white;
+    border-color: var(--c-livre);
+}
+
+.filter:hover {
+    transform: translateY(-2px);
+    opacity: .9;
 }
 
 @media (max-width: 900px) {

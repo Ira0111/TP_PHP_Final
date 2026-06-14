@@ -1,4 +1,4 @@
-const apiKey = "f442994667b277e5713a208e0efef0e3";
+/* const apiKey = "f442994667b277e5713a208e0efef0e3";
 const moviesContainer = document.getElementById("movies");
 const pageNumber = document.getElementById("pageNumber");
 
@@ -16,7 +16,7 @@ async function loadMovies(page) {
 
     displayMovies(data.results);
     pageNumber.textContent = `Page ${page}`;
-}
+}A
 async function searchMovies(query) {
     const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}`;
 
@@ -121,3 +121,4 @@ document.getElementById("searchInput").addEventListener("keypress", (e) => {
 
 // Charger la première page
 loadMovies(currentPage);
+ */
