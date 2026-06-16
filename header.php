@@ -45,9 +45,10 @@ $page_actuelle = basename($_SERVER['PHP_SELF'], '.php');
 
     <div class="navbar__actions">
       <?php if (isset($_SESSION['user_id'])): ?>
-        <a href="./dashboard.php" class="navbar__avatar">
+        <a href="./dashboard.php" class="navbar__avatar" title="<?= htmlspecialchars($_SESSION['user_initials']) ?>">
           <?= $_SESSION['user_initials'] ?>
         </a>
+        <a href="./logout.php" class="navbar__logout">Déconnexion</a>
       <?php else: ?>
         <a href="./login.php" class="btn-outline btn-xs">Connexion</a>
         <a href="./register.php" class="btn-primary btn-xs">S'inscrire</a>

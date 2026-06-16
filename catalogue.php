@@ -36,14 +36,6 @@ $type = $_GET['type'] ?? 'all';
     </div>
 </section>
 
-<div id="popup" class="popup">
-    <div class="popup-content">
-        <h2 id="popupTitle"></h2>
-        <p id="popupOverview"></p>
-        <button id="closePopup" class="btn-primary btn-sm">Fermer</button>
-    </div>
-</div>
-
 <script src="assets/catalogue.js"></script>
 <?php require_once 'footer.php'; ?>
 
