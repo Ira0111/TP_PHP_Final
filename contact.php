@@ -91,10 +91,10 @@ include 'header.php';
                             <option value="" disabled <?= $fields['sujet'] === '' ? 'selected' : '' ?>>
                                 Choisis un sujet
                             </option>
-                            <option value="bug" <?= $fields['sujet'] === 'bug'        ? 'selected' : '' ?>>🐛 Signaler un bug</option>
-                            <option value="suggestion" <?= $fields['sujet'] === 'suggestion' ? 'selected' : '' ?>>💡 Suggestion</option>
-                            <option value="question" <?= $fields['sujet'] === 'question'   ? 'selected' : '' ?>>❓ Question générale</option>
-                            <option value="autre" <?= $fields['sujet'] === 'autre'      ? 'selected' : '' ?>>✉️ Autre</option>
+                            <option value="bug" <?= $fields['sujet'] === 'bug'        ? 'selected' : '' ?>>Signaler un bug</option>
+                            <option value="suggestion" <?= $fields['sujet'] === 'suggestion' ? 'selected' : '' ?>>Suggestion</option>
+                            <option value="question" <?= $fields['sujet'] === 'question'   ? 'selected' : '' ?>>Question générale</option>
+                            <option value="autre" <?= $fields['sujet'] === 'autre'      ? 'selected' : '' ?>>Autre</option>
                         </select>
                     </div>
 
@@ -109,7 +109,7 @@ include 'header.php';
                     </div>
 
                     <button type="submit" class="btn-primary contact__submit">
-                        Envoyer le message →
+                        Envoyer le message
                     </button>
 
                 </form>
@@ -119,7 +119,7 @@ include 'header.php';
             <aside class="contact__info">
 
                 <div class="contact__info-card">
-                    <div class="contact__info-icon">📧</div>
+                    <div class="contact__info-icon"><img src="./assets/icons/emailL.png" alt="eamil icon" height="40px"></div>
                     <div>
                         <h3 class="contact__info-title">Email</h3>
                         <p class="contact__info-text">contact@kultrack.com</p>
@@ -127,7 +127,7 @@ include 'header.php';
                 </div>
 
                 <div class="contact__info-card">
-                    <div class="contact__info-icon">⏱️</div>
+                    <div class="contact__info-icon"><img src="./assets/icons/timeL.png" alt="time icon" height="40px"></div>
                     <div>
                         <h3 class="contact__info-title">Temps de réponse</h3>
                         <p class="contact__info-text">Sous 48h en général</p>
@@ -135,7 +135,7 @@ include 'header.php';
                 </div>
 
                 <div class="contact__info-card">
-                    <div class="contact__info-icon">🐛</div>
+                    <div class="contact__info-icon"><img src="./assets/icons/infoL.png" alt="information icon" height="40px"></div>
                     <div>
                         <h3 class="contact__info-title">Bug urgent ?</h3>
                         <p class="contact__info-text">

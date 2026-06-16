@@ -19,7 +19,7 @@ $page_actuelle = basename($_SERVER['PHP_SELF'], '.php');
 
     <a href="./index.php" class="navbar__logo">
       <img src="./assets/icons/logo.svg" alt="Logo Kultrack" class="navbar__logo-icon">
-      Kul<span>track</span>
+      <div class="footer__logo">KUL<span>TRACK</span></div>
     </a>
 
     <nav class="navbar__links">
@@ -45,7 +45,7 @@ $page_actuelle = basename($_SERVER['PHP_SELF'], '.php');
 
     <div class="navbar__actions">
       <?php if (isset($_SESSION['user_id'])): ?>
-        <a href="./dashboard.php" class="navbar__avatar" title="<?= htmlspecialchars($_SESSION['user_initials']) ?>">
+        <a href="./dashboard.php" class="navbar__avatar" title="<?= htmlspecialchars($_SESSION['user_nom']) ?>">
           <?= $_SESSION['user_initials'] ?>
         </a>
         <a href="./logout.php" class="navbar__logout">Déconnexion</a>

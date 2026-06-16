@@ -68,7 +68,7 @@ include 'header.php';
 
         <p class="auth__switch">
             Pas encore de compte ?
-            <a href="register.php">Crée-en un gratuitement</a>
+            <a href="register.php">Inscris toi</a>
         </p>
 
     </div>

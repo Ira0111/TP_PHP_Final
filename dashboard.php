@@ -74,7 +74,7 @@ include 'header.php';
         <div class="dashboard__header">
             <div>
                 <h1 class="dashboard__title">
-                    Bonjour, <?= htmlspecialchars($_SESSION['user_nom']) ?> 👋
+                    Bonjour, <?= htmlspecialchars($_SESSION['user_nom']) ?>
                 </h1>
                 <p class="dashboard__subtitle">Voici ta collection de médias</p>
             </div>
@@ -244,7 +244,7 @@ include 'header.php';
         <?php if (empty($rows)): ?>
             <div class="dashboard__empty">
                 <p class="dashboard__empty-text">Tu n'as encore rien dans ta liste.</p>
-                <a href="catalogue.php" class="btn-primary btn-lg">Parcourir le catalogue →</a>
+                <a href="catalogue.php" class="btn-primary btn-lg">Parcourir le catalogue</a>
             </div>
         <?php endif; ?>
 

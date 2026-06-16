@@ -1,8 +1,40 @@
 const API_KEYS = {
-  tmdb:  'f442994667b277e5713a208e0efef0e3',
-  rawg:  'a02d70de4ce242308e5d60335a4e7479',
+  tmdb: 'f442994667b277e5713a208e0efef0e3',
+  rawg: 'a02d70de4ce242308e5d60335a4e7479',
   books: 'AIzaSyDMuRrZ1LKaDFnZ13NPPV2V0yJ63to_tUo'
 };
+
+function isEnglish(text) {
+  if (!text) return false;
+  const common = ["the", "and", "with", "from", "this", "that", "for", "movie", "series", "story", "game", "book"];
+  const lower = text.toLowerCase();
+  let count = 0;
+  common.forEach(w => { if (lower.includes(w)) count++; });
+  return count >= 2;
+}
+
+function cleanText(text) {
+  return text
+    .replace(/<[^>]+>/g, '')   // supprime les balises HTML
+    .replace(/\s+/g, ' ')      // nettoie les espaces
+    .trim();
+}
+
+async function translateToFrench(text) {
+  try {
+    const res = await fetch("translate.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "text=" + encodeURIComponent(text)
+    });
+
+    const data = await res.json();
+    return data.translations?.[0]?.text || text;
+  } catch (err) {
+    console.error("Erreur traduction", err);
+    return text;
+  }
+}
 
 /* ─────────────────────────────────────────────
    Point d'entrée
@@ -22,10 +54,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 ───────────────────────────────────────────── */
 async function fetchMedia(type, id) {
   switch (type) {
-    case 'film':  return fetchTMDB('movie', id);
-    case 'serie': return fetchTMDB('tv',    id);
-    case 'anime': return fetchTMDB('tv',    id);   // animés = TV sur TMDB
-    case 'jeu':   return fetchRAWG(id);
+    case 'film': return fetchTMDB('movie', id);
+    case 'serie': return fetchTMDB('tv', id);
+    case 'anime': return fetchTMDB('tv', id);   // animés = TV sur TMDB
+    case 'jeu': return fetchRAWG(id);
     case 'livre': return fetchBooks(id);
     default: throw new Error('Type inconnu');
   }
@@ -33,8 +65,8 @@ async function fetchMedia(type, id) {
 
 /* ─── TMDB (films + séries + animés) ─── */
 async function fetchTMDB(tmdbType, id) {
-  const lang   = 'fr-FR';
-  const base   = 'https://api.themoviedb.org/3';
+  const lang = 'fr-FR';
+  const base = 'https://api.themoviedb.org/3';
   const apiKey = API_KEYS.tmdb;
 
   const res = await fetch(`${base}/${tmdbType}/${id}?api_key=${apiKey}&language=${lang}`);
@@ -42,11 +74,15 @@ async function fetchTMDB(tmdbType, id) {
   const d = await res.json();
 
   return {
-    title:    d.title || d.name,
-    poster:   d.poster_path ? `https://image.tmdb.org/t/p/w500${d.poster_path}` : 'assets/icons/filmL.png',
-    year:     (d.release_date || d.first_air_date || '').slice(0, 4),
-    genre:    d.genres?.map(g => g.name).join(', ') || '',
-    overview: d.overview || 'Aucune description disponible.',
+    title: d.title || d.name,
+    poster: d.poster_path ? `https://image.tmdb.org/t/p/w500${d.poster_path}` : 'assets/icons/filmL.png',
+    year: (d.release_date || d.first_air_date || '').slice(0, 4),
+    genre: d.genres?.map(g => g.name).join(', ') || '',
+    overview: await (async () => {
+      const text = d.overview || 'Aucune description disponible.';
+      return isEnglish(text) ? await translateToFrench(text) : text;
+    })(),
+
     extra: tmdbType === 'movie'
       ? `${d.runtime ? d.runtime + ' min' : ''}`
       : `${d.number_of_seasons ?? ''} saison(s) · ${d.number_of_episodes ?? ''} épisodes`,
@@ -73,14 +109,19 @@ async function fetchRAWG(id) {
   const res = await fetch(`https://api.rawg.io/api/games/${id}?key=${API_KEYS.rawg}`);
   if (!res.ok) throw new Error('RAWG error');
   const d = await res.json();
-
   return {
-    title:    d.name,
-    poster:   d.background_image || 'assets/icons/jeuL.png',
-    year:     (d.released || '').slice(0, 4),
-    genre:    d.genres?.map(g => g.name).join(', ') || '',
-    overview: d.description_raw || 'Aucune description disponible.',
-    extra:    d.platforms?.map(p => p.platform.name).join(' · ') || '',
+    title: d.name,
+    poster: d.background_image || 'assets/icons/jeuL.png',
+    year: (d.released || '').slice(0, 4),
+    genre: d.genres?.map(g => g.name).join(', ') || '',
+
+    overview: await (async () => {
+      const raw = d.description_raw || 'Aucune description disponible.';
+      const text = cleanText(raw);
+      return isEnglish(text) ? await translateToFrench(text) : text;
+    })(),
+
+    extra: d.platforms?.map(p => p.platform.name).join(' · ') || '',
     extraInfo: buildRAWGExtra(d),
     vote: d.rating ? `${d.rating.toFixed(1)} / 5` : null,
   };
@@ -108,12 +149,16 @@ async function fetchBooks(id) {
   const i = d.volumeInfo || {};
 
   return {
-    title:    i.title || 'Sans titre',
-    poster:   i.imageLinks?.thumbnail?.replace('http://', 'https://') || 'assets/icons/livreL.png',
-    year:     (i.publishedDate || '').slice(0, 4),
-    genre:    i.categories?.join(', ') || '',
-    overview: i.description || 'Aucune description disponible.',
-    extra:    i.pageCount ? `${i.pageCount} pages` : '',
+    title: i.title || 'Sans titre',
+    poster: i.imageLinks?.thumbnail?.replace('http://', 'https://') || 'assets/icons/livreL.png',
+    year: (i.publishedDate || '').slice(0, 4),
+    genre: i.categories?.join(', ') || '',
+    overview: await (async () => {
+      const text = i.description || 'Aucune description disponible.';
+      return isEnglish(text) ? await translateToFrench(text) : text;
+    })(),
+
+    extra: i.pageCount ? `${i.pageCount} pages` : '',
     extraInfo: buildBooksExtra(i),
     vote: i.averageRating ? `${i.averageRating} / 5` : null,
   };
@@ -153,7 +198,7 @@ function renderMedia(type, data) {
   badge.className = `media-badge media-badge--${type}`;
 
   // Breadcrumb
-  document.getElementById('breadcrumb-type').textContent  = TYPE_LABELS[type];
+  document.getElementById('breadcrumb-type').textContent = TYPE_LABELS[type];
   document.getElementById('breadcrumb-title').textContent = data.title;
 
   // Titre
@@ -161,7 +206,7 @@ function renderMedia(type, data) {
   document.title = `${data.title} — Kultrack`;
 
   // Meta pills
-  setText('media-year',  data.year);
+  setText('media-year', data.year);
   setText('media-genre', data.genre);
   setText('media-extra', data.extra);
 
@@ -189,7 +234,7 @@ function renderMedia(type, data) {
   }
 
   // Transition loader → contenu
-  document.getElementById('media-loader').style.display  = 'none';
+  document.getElementById('media-loader').style.display = 'none';
   document.getElementById('media-content').style.display = 'flex';
 
   // Stocker pour le bouton follow
@@ -204,16 +249,16 @@ function setText(id, val) {
 
 function showError() {
   document.getElementById('media-loader').style.display = 'none';
-  document.getElementById('media-error').style.display  = 'block';
+  document.getElementById('media-error').style.display = 'block';
 }
 
 /* ─────────────────────────────────────────────
    Bouton follow (AJAX vers follow_action.php)
 ───────────────────────────────────────────── */
 function initFollowBtn() {
-  const btn    = document.getElementById('follow-btn');
+  const btn = document.getElementById('follow-btn');
   const select = document.getElementById('follow-status');
-  const msg    = document.getElementById('follow-msg');
+  const msg = document.getElementById('follow-msg');
   if (!btn || !USER_ID) return;
 
   btn.addEventListener('click', async () => {
@@ -228,12 +273,12 @@ function initFollowBtn() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          api_id:     MEDIA_ID,
+          api_id: MEDIA_ID,
           api_source: getApiSource(MEDIA_TYPE),
-          type:       MEDIA_TYPE,
-          title:      window._mediaData?.title  || '',
-          poster:     window._mediaData?.poster || '',
-          status:     status,
+          type: MEDIA_TYPE,
+          title: window._mediaData?.title || '',
+          poster: window._mediaData?.poster || '',
+          status: status,
         })
       });
       const json = await res.json();
@@ -253,14 +298,14 @@ function initFollowBtn() {
 
 function getApiSource(type) {
   if (['film', 'serie', 'anime'].includes(type)) return 'tmdb';
-  if (type === 'jeu')   return 'rawg';
+  if (type === 'jeu') return 'rawg';
   if (type === 'livre') return 'google_books';
   return 'unknown';
 }
 
 function showMsg(el, text, cls) {
   el.textContent = text;
-  el.className   = `follow-msg follow-msg--${cls}`;
+  el.className = `follow-msg follow-msg--${cls}`;
   el.style.display = 'inline-block';
   setTimeout(() => { el.style.display = 'none'; }, 4000);
 }

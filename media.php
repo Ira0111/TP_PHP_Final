@@ -1,14 +1,13 @@
 <?php
 require_once 'config.php';
 
-// Paramètres GET obligatoires
 $type  = $_GET['type']  ?? '';
 $id    = $_GET['id']    ?? '';
 
 $types_valides = ['film', 'serie', 'anime', 'jeu', 'livre'];
 if (!in_array($type, $types_valides) || empty($id)) {
-    header('Location: catalogue.php');
-    exit;
+  header('Location: catalogue.php');
+  exit;
 }
 
 $page_title = 'Fiche média — Kultrack';
@@ -40,16 +39,16 @@ require_once 'header.php';
       <div class="media-fiche__info">
         <nav class="breadcrumb">
           <a href="catalogue.php">Catalogue</a>
-          <span>›</span>
+          <span></span>
           <a id="breadcrumb-type" href="catalogue.php?type=<?= htmlspecialchars($type) ?>"></a>
-          <span>›</span>
+          <span></span>
           <span id="breadcrumb-title"></span>
         </nav>
 
         <h1 id="media-title" class="media-fiche__title"></h1>
 
         <div class="media-fiche__meta">
-          <span id="media-year"  class="meta-pill"></span>
+          <span id="media-year" class="meta-pill"></span>
           <span id="media-genre" class="meta-pill meta-pill--genre"></span>
           <span id="media-extra" class="meta-pill meta-pill--extra"></span>
         </div>
@@ -58,36 +57,33 @@ require_once 'header.php';
 
         <!-- Bouton suivi — visible uniquement si connecté -->
         <?php if (isset($_SESSION['user_id'])): ?>
-        <div class="media-fiche__actions">
-          <select id="follow-status" class="follow-select">
-            <option value="">— Ajouter à ma liste —</option>
-            <option value="plan_to_watch">À voir / jouer / lire</option>
-            <option value="watching">En cours</option>
-            <option value="completed">Terminé</option>
-            <option value="on_hold">En pause</option>
-            <option value="dropped">Abandonné</option>
-          </select>
-          <button id="follow-btn" class="btn-primary btn-md">
-            <img src="assets/icons/heart.png" alt="" width="14" height="14">
-            Enregistrer
-          </button>
-          <span id="follow-msg" class="follow-msg" style="display:none"></span>
-        </div>
+          <div class="media-fiche__actions">
+            <select id="follow-status" class="follow-select">
+              <option value="">— Ajouter à ma liste —</option>
+              <option value="plan_to_watch">À voir / jouer / lire</option>
+              <option value="watching">En cours</option>
+              <option value="completed">Terminé</option>
+              <option value="on_hold">En pause</option>
+              <option value="dropped">Abandonné</option>
+            </select>
+            <button id="follow-btn" class="btn-primary btn-md">
+              Enregistrer
+            </button>
+            <span id="follow-msg" class="follow-msg" style="display:none"></span>
+          </div>
         <?php else: ?>
-        <div class="media-fiche__actions">
-          <a href="login.php" class="btn-outline btn-md">
-            Connecte-toi pour suivre ce média
-          </a>
-        </div>
+          <div class="media-fiche__actions">
+            <a href="login.php" class="btn-outline btn-md">
+              Connecte-toi pour suivre ce média
+            </a>
+          </div>
         <?php endif; ?>
 
         <!-- Infos complémentaires selon le type -->
         <div id="media-extra-info" class="media-fiche__extra"></div>
       </div>
-
+      <a href="catalogue.php?type=<?= htmlspecialchars($type) ?>">Retour au catalogue</a>
     </div>
-
-    <!-- Message d'erreur -->
     <div id="media-error" class="media-error" style="display:none">
       <p>Impossible de charger ce média. <a href="catalogue.php?type=<?= htmlspecialchars($type) ?>">Retour au catalogue</a></p>
     </div>
@@ -98,11 +94,11 @@ require_once 'header.php';
 <!-- Données PHP transmises au JS -->
 <script>
   const MEDIA_TYPE = <?= json_encode($type) ?>;
-  const MEDIA_ID   = <?= json_encode($id)   ?>;
+  const MEDIA_ID = <?= json_encode($id)   ?>;
   <?php if (isset($_SESSION['user_id'])): ?>
-  const USER_ID    = <?= json_encode($_SESSION['user_id']) ?>;
+    const USER_ID = <?= json_encode($_SESSION['user_id']) ?>;
   <?php else: ?>
-  const USER_ID    = null;
+    USER_ID = null;
   <?php endif; ?>
 </script>
 <script src="assets/media.js"></script>
