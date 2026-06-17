@@ -27,7 +27,7 @@ $type = $_GET['type'] ?? 'all';
 
         <div id="catalogue-grid" class="medias-grid"></div>
 
-        <div class="pagination">
+        <div id="pagination" class="pagination">
             <button id="prevPage" class="btn-outline btn-sm">Précédent</button>
             <span id="pageNumber">Page 1</span>
             <button id="nextPage" class="btn-outline btn-sm">Suivant</button>
@@ -38,4 +38,3 @@ $type = $_GET['type'] ?? 'all';
 
 <script src="assets/catalogue.js"></script>
 <?php require_once 'footer.php'; ?>
-

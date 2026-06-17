@@ -253,7 +253,7 @@ function showError() {
 }
 
 /* ─────────────────────────────────────────────
-   Bouton follow (AJAX vers follow_action.php)
+   Bouton follow (AJAX vers followAction.php)
 ───────────────────────────────────────────── */
 function initFollowBtn() {
   const btn = document.getElementById('follow-btn');
@@ -269,7 +269,7 @@ function initFollowBtn() {
     btn.textContent = 'Enregistrement…';
 
     try {
-      const res = await fetch('follow_action.php', {
+      const res = await fetch('followAction.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 <?php
+
 /**
- * follow_action.php — Kultrack
+ * followAction.php — Kultrack
  * Endpoint AJAX : enregistre ou met à jour le suivi d'un média.
  *
  * Flux :
@@ -25,6 +26,11 @@ if (!isset($_SESSION['user_id'])) {
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true);
 
+if (!is_array($data)) {
+    echo json_encode(['success' => false, 'error' => 'JSON invalide']);
+    exit;
+}
+
 $required = ['api_id', 'api_source', 'type', 'status'];
 foreach ($required as $field) {
     if (empty($data[$field])) {
@@ -34,32 +40,32 @@ foreach ($required as $field) {
 }
 
 $userId    = (int) $_SESSION['user_id'];
-$apiId     = htmlspecialchars($data['api_id'],     ENT_QUOTES);
-$apiSource = htmlspecialchars($data['api_source'], ENT_QUOTES);
-$type      = htmlspecialchars($data['type'],       ENT_QUOTES);
-$title     = htmlspecialchars($data['title'] ?? '', ENT_QUOTES);
+$apiId     = htmlspecialchars($data['api_id'],      ENT_QUOTES);
+$apiSource = htmlspecialchars($data['api_source'],  ENT_QUOTES);
+$type      = htmlspecialchars($data['type'],        ENT_QUOTES);
+$title     = htmlspecialchars($data['title']  ?? '', ENT_QUOTES);
 $poster    = htmlspecialchars($data['poster'] ?? '', ENT_QUOTES);
 $status    = $data['status'];
 
-// Statuts autorisés
+// Statuts autorisés (correspond à l'ENUM BDD)
 $statuts_ok = ['watching', 'completed', 'on_hold', 'dropped', 'plan_to_watch'];
 if (!in_array($status, $statuts_ok)) {
     echo json_encode(['success' => false, 'error' => 'Statut invalide']);
     exit;
 }
 
-// Correspondance type Kultrack → ENUM BDD
+// Correspondance type slug → ENUM BDD
 $typeMap = [
     'film'  => 'movie',
     'serie' => 'serie',
-    'anime' => 'serie',  // animés stockés comme séries
+    'anime' => 'anime',
     'jeu'   => 'game',
     'livre' => 'book',
 ];
 $typeDB = $typeMap[$type] ?? 'movie';
 
 try {
-    $pdo = $GLOBALS['pdo'] ?? (new Database())->getConnection();
+    global $pdo;
 
     /* ── 1. Trouver ou créer le média en BDD ── */
     $stmt = $pdo->prepare(
@@ -71,7 +77,7 @@ try {
     if (!$media) {
         $ins = $pdo->prepare(
             'INSERT INTO media (title, type, image, date, created_at, api_id, api_source)
-             VALUES (?, ?, ?, NOW(), NOW(), ?, ?)'
+             VALUES (?, ?, ?, CURDATE(), NOW(), ?, ?)'
         );
         $ins->execute([$title, $typeDB, $poster, $apiId, $apiSource]);
         $mediaId = (int) $pdo->lastInsertId();
@@ -87,11 +93,13 @@ try {
     $existing = $check->fetch(PDO::FETCH_ASSOC);
 
     if ($existing) {
+        /* Mise à jour du statut */
         $upd = $pdo->prepare(
             'UPDATE follow SET status = ?, update_at = NOW() WHERE follow_id = ?'
         );
         $upd->execute([$status, $existing['follow_id']]);
     } else {
+        /* Nouveau suivi */
         $new = $pdo->prepare(
             'INSERT INTO follow (status, progress, update_at, user_id, media_id)
              VALUES (?, 0, NOW(), ?, ?)'
@@ -100,9 +108,7 @@ try {
     }
 
     echo json_encode(['success' => true]);
-
 } catch (PDOException $e) {
-    // Ne jamais exposer les détails d'une erreur PDO en prod
-    error_log('follow_action.php PDO error: ' . $e->getMessage());
+    error_log('followAction.php PDO error: ' . $e->getMessage());
     echo json_encode(['success' => false, 'error' => 'Erreur base de données']);
 }

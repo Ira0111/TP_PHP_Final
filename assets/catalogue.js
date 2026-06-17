@@ -17,6 +17,7 @@ let currentPage = 1;
 ============================ */
 
 function loadContent(page = 1) {
+    document.getElementById("pagination").style.display = "flex";
     switch (type) {
         case "film": loadMovies(page); break;
         case "serie": loadSeries(page); break;
@@ -24,8 +25,9 @@ function loadContent(page = 1) {
         case "jeu": loadGames(page); break;
         case "livre": loadBooks(page); break;
         default:
-            grid.innerHTML = "<p>Sélectionne un type pour afficher les médias.</p>";
+            grid.innerHTML = "<p class='catalogue-empty-msg'>Sélectionne un type pour afficher les médias.</p>";
     }
+    updatePagination();
 }
 
 
@@ -185,38 +187,50 @@ function normalizeItem(item, type) {
         case "film":
             return {
                 id: item.id,
-                title: item.title,
-                image: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "",
-                date: item.release_date,
-                overview: item.overview,
+                title: item.title || "Sans titre",
+                image: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "assets/icons/filmL.png",
+                date: item.release_date || "Date inconnue",
+                overview: item.overview || "Aucune description disponible.",
             };
+
         case "serie":
+            return {
+                id: item.id,
+                title: item.name || "Sans titre",
+                image: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "assets/icons/serieL.png",
+                date: item.first_air_date || "Date inconnue",
+                overview: item.overview || "Aucune description disponible.",
+            };
         case "anime":
             return {
                 id: item.id,
-                title: item.name,
-                image: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "",
-                date: item.first_air_date,
-                overview: item.overview,
+                title: item.name || "Sans titre",
+                image: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "assets/icons/animeL.png",
+                date: item.first_air_date || "Date inconnue",
+                overview: item.overview || "Aucune description disponible.",
             };
+
         case "jeu":
             return {
                 id: item.id,
-                title: item.name,
-                image: item.background_image || "",
-                date: item.released,
+                title: item.name || "Sans titre",
+                image: item.background_image || "assets/icons/jeuL.png",
+                date: item.released || "Date inconnue",
                 overview: "Aucune description disponible.",
             };
+
         case "livre":
+            const info = item.volumeInfo || {};
             return {
                 id: item.id,
-                title: item.volumeInfo.title,
-                image: (item.volumeInfo.imageLinks?.thumbnail || "").replace("http://", "https://"),
-                date: item.volumeInfo.publishedDate,
-                overview: item.volumeInfo.description || "Aucune description.",
+                title: info.title || "Sans titre",
+                image: (info.imageLinks?.thumbnail || "assets/icons/livreL.png").replace("http://", "https://"),
+                date: info.publishedDate || "Date inconnue",
+                overview: info.description || "Aucune description.",
             };
     }
 }
+
 
 function displayMedias(items, type) {
     grid.innerHTML = "";
@@ -251,13 +265,16 @@ function displayMedias(items, type) {
 document.getElementById("nextPage").addEventListener("click", () => {
     currentPage++;
     loadContent(currentPage);
+    updatePagination();
     window.scrollTo({ top: 0, behavior: "smooth" });
 });
+
 
 document.getElementById("prevPage").addEventListener("click", () => {
     if (currentPage > 1) {
         currentPage--;
         loadContent(currentPage);
+        updatePagination();
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 });
@@ -274,39 +291,112 @@ function updatePagination() {
 
 async function searchContent(query) {
     if (!query) return;
-
+    document.getElementById("pagination").style.display = "none";
     switch (type) {
+
         case "film": {
-            const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&language=fr-FR&query=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            displayMedias(data.results, "film");
+            let page = 1;
+            let all = [];
+            let totalPages = 1;
+
+            while (page <= totalPages) {
+                const res = await fetch(
+                    `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&language=fr-FR&query=${encodeURIComponent(query)}&page=${page}`
+                );
+                const data = await res.json();
+
+                all.push(...data.results);
+                totalPages = data.total_pages;
+                page++;
+            }
+
+            displayMedias(all, "film");
             break;
         }
+
         case "serie": {
-            const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&language=fr-FR&query=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            displayMedias(data.results, "serie");
+            let page = 1;
+            let all = [];
+            let totalPages = 1;
+
+            while (page <= totalPages) {
+                const res = await fetch(
+                    `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&language=fr-FR&query=${encodeURIComponent(query)}&page=${page}`
+                );
+                const data = await res.json();
+
+                all.push(...data.results);
+                totalPages = data.total_pages;
+                page++;
+            }
+
+            displayMedias(all, "serie");
             break;
         }
+
         case "anime": {
-            // Recherche TV + filtre côté client sur les résultats qui ont l'air d'animés
-            const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&language=fr-FR&query=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            displayMedias(data.results, "anime");
+            let page = 1;
+            let all = [];
+            let totalPages = 1;
+
+            while (page <= totalPages) {
+                const res = await fetch(
+                    `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&language=fr-FR&query=${encodeURIComponent(query)}&page=${page}`
+                );
+                const data = await res.json();
+
+                all.push(...data.results);
+                totalPages = data.total_pages;
+                page++;
+            }
+
+            displayMedias(all, "anime");
             break;
         }
+
         case "jeu": {
-            const res = await fetch(`https://api.rawg.io/api/games?key=${RAWG_KEY}&search=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            displayMedias(data.results, "jeu");
+            let all = [];
+            let page = 1;
+
+            while (page <= 10) {
+                const res = await fetch(
+                    `https://api.rawg.io/api/games?key=${RAWG_KEY}&search=${encodeURIComponent(query)}&page=${page}`
+                );
+                const data = await res.json();
+
+                if (!data.results || data.results.length === 0) break;
+
+                all.push(...data.results);
+                page++;
+            }
+
+            displayMedias(all, "jeu");
             break;
         }
+
+
         case "livre": {
-            const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=20&key=${GOOGLE_KEY}`);
-            const data = await res.json();
-            displayMedias(data.items || [], "livre");
+            let all = [];
+            let start = 0;
+            const max = 40;
+
+            while (start < 200) {
+                const res = await fetch(
+                    `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&startIndex=${start}&maxResults=${max}&key=${GOOGLE_KEY}`
+                );
+                const data = await res.json();
+
+                if (!data.items || data.items.length === 0) break;
+
+                all.push(...data.items);
+                start += max;
+            }
+
+            displayMedias(all, "livre");
             break;
         }
+
+
         default:
             grid.innerHTML = "<p>Sélectionne un type pour rechercher.</p>";
     }
@@ -319,14 +409,18 @@ document.getElementById("searchBtn").addEventListener("click", () => {
 
 document.getElementById("searchInput").addEventListener("keydown", e => {
     if (e.key === "Enter") {
+        e.preventDefault(); // <-- important aussi ici
         const query = e.target.value.trim();
         if (query) searchContent(query);
     }
 });
 
+// Empêche le rechargement du formulaire
+document.querySelector(".catalogue-search").addEventListener("submit", e => {
+    e.preventDefault();
+    const query = document.getElementById("searchInput").value.trim();
+    if (query) searchContent(query);
+});
 
-/* ============================
-   INIT
-============================ */
 
 loadContent(currentPage);

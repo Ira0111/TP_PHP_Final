@@ -240,7 +240,6 @@ include 'header.php';
             </div>
         <?php endif; ?>
 
-        <!-- Liste vide -->
         <?php if (empty($rows)): ?>
             <div class="dashboard__empty">
                 <p class="dashboard__empty-text">Tu n'as encore rien dans ta liste.</p>

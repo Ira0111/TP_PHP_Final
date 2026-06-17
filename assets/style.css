@@ -204,7 +204,6 @@ ol {
    ============================================================ */
 header.navbar {
   height: 64px;
-  position: sticky;
   top: 0;
   z-index: 200;
   background: var(--c-bg);
@@ -603,7 +602,7 @@ footer.footer {
 .media-card__thumb img:not(.media-card__thumb-icon) {
   width: 100%;
   height: 100%;
-  object-fit:contain;
+  object-fit: contain;
 }
 
 .media-card__thumb-icon,
@@ -658,12 +657,11 @@ footer.footer {
 
 .media-card__title {
   font-family: var(--f-title);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--c-text);
   margin-bottom: 4px;
   line-height: 1.3;
-  /* Troncature sur 2 lignes */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -722,6 +720,14 @@ footer.footer {
 .media-card__progress {
   font-size: 11px;
   color: var(--c-text-muted);
+}
+
+.catalogue-empty-msg {
+  text-align: center;
+  font-size: 16px;
+  color: var(--c-text-muted);
+  padding: 3rem 0;
+  grid-column: 3;
 }
 
 /* ============================================================
@@ -796,7 +802,7 @@ footer.footer {
   font-size: 13px;
   font-weight: 600;
   border: 1.5px solid var(--c-border);
-  background: var(--c-surface);
+  background: var(--c-surface-2);
   color: var(--c-text-muted);
   transition: var(--t);
   cursor: pointer;
@@ -1750,7 +1756,8 @@ footer.footer {
 
   .media-fiche {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 100px;
+
   }
 
   .media-fiche__poster-wrap {
