@@ -3,9 +3,6 @@ require_once 'config.php';
 $page_title = 'Accueil';
 include 'header.php';
 
-/* ───────────────────────────────────────────────
-   Données temporaires (à remplacer par ta BDD)
-──────────────────────────────────────────────── */
 $medias_tendances = [
     ['id' => 1, 'titre' => 'Severance',   'type' => 'serie', 'annee' => 2022, 'note' => 4],
     ['id' => 2, 'titre' => 'Elden Ring',  'type' => 'jeu',   'annee' => 2022, 'note' => 5],
@@ -22,9 +19,6 @@ $categories = [
     ['type' => 'livre', 'label' => 'Livres'],
 ];
 
-/* ───────────────────────────────────────────────
-   Fonctions utilitaires
-──────────────────────────────────────────────── */
 function getTypeLabel(string $type): string
 {
     return match ($type) {
@@ -48,7 +42,6 @@ function renderHearts(int $note): string
 }
 ?>
 
-<!-- ═══════════ HERO ═══════════ -->
 <section class="hero">
     <div class="hero__content">
         <p class="hero__eyebrow">Films · Séries · Animés · Jeux · Livres</p>
@@ -75,7 +68,6 @@ function renderHearts(int $note): string
     </div>
 </section>
 
-<!-- ═══════════ CATÉGORIES ═══════════ -->
 <section class="section categories">
     <div class="container">
         <h2 class="section__title">Explorer par type</h2>
@@ -140,7 +132,6 @@ function renderHearts(int $note): string
     </div>
 </section>
 
-<!-- ═══════════ CTA BAS ═══════════ -->
 <?php if (!isset($_SESSION['user_id'])): ?>
     <section class="section cta-banner">
         <div class="container">
@@ -152,7 +143,7 @@ function renderHearts(int $note): string
                     </p>
                 </div>
 
-                <a href="register.php" class="btn-primary btn-lg">C'est parti →</a>
+                <a href="register.php" class="btn-primary btn-lg">C'est parti</a>
             </div>
         </div>
     </section>

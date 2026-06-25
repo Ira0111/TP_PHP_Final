@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost:3306
--- Généré le : sam. 13 juin 2026 à 13:15
+-- Généré le : ven. 19 juin 2026 à 09:00
 -- Version du serveur : 5.7.24
 -- Version de PHP : 8.3.1
 
@@ -31,6 +31,7 @@ CREATE TABLE `follow` (
   `follow_id` int(11) NOT NULL,
   `status` enum('watching','completed','on_hold','dropped','plan_to_watch') NOT NULL,
   `progress` float NOT NULL,
+  `progress_detail` varchar(150) DEFAULT NULL,
   `update_at` datetime NOT NULL,
   `user_id` int(11) NOT NULL,
   `media_id` int(11) NOT NULL
@@ -45,10 +46,14 @@ CREATE TABLE `follow` (
 CREATE TABLE `media` (
   `media_id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `type` enum('movie','serie','game','book','music') NOT NULL,
+  `type` enum('movie','serie','anime','game','book') NOT NULL,
   `description` text,
   `image` varchar(500) NOT NULL,
   `date` date NOT NULL,
+  `duration_minutes` int(11) DEFAULT NULL,
+  `total_seasons` int(11) DEFAULT NULL,
+  `total_episodes` int(11) DEFAULT NULL,
+  `total_pages` int(11) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `api_id` varchar(255) NOT NULL,
   `api_source` varchar(50) NOT NULL
@@ -93,7 +98,9 @@ CREATE TABLE `user` (
 -- Index pour la table `follow`
 --
 ALTER TABLE `follow`
-  ADD PRIMARY KEY (`follow_id`);
+  ADD PRIMARY KEY (`follow_id`),
+  ADD KEY `fk_follow_user_id` (`user_id`),
+  ADD KEY `fk_follow_media_id` (`media_id`);
 
 --
 -- Index pour la table `media`
@@ -105,7 +112,9 @@ ALTER TABLE `media`
 -- Index pour la table `review`
 --
 ALTER TABLE `review`
-  ADD PRIMARY KEY (`review_id`);
+  ADD PRIMARY KEY (`review_id`),
+  ADD KEY `fk_review_user_id` (`user_id`),
+  ADD KEY `fk_review_media_id` (`media_id`);
 
 --
 -- Index pour la table `user`
@@ -122,13 +131,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT pour la table `follow`
 --
 ALTER TABLE `follow`
-  MODIFY `follow_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `follow_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT pour la table `media`
 --
 ALTER TABLE `media`
-  MODIFY `media_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `media_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT pour la table `review`
@@ -140,7 +149,25 @@ ALTER TABLE `review`
 -- AUTO_INCREMENT pour la table `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- Contraintes pour les tables déchargées
+--
+
+--
+-- Contraintes pour la table `follow`
+--
+ALTER TABLE `follow`
+  ADD CONSTRAINT `fk_follow_media_id` FOREIGN KEY (`media_id`) REFERENCES `media` (`media_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_follow_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `review`
+--
+ALTER TABLE `review`
+  ADD CONSTRAINT `fk_review_media_id` FOREIGN KEY (`media_id`) REFERENCES `media` (`media_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_review_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

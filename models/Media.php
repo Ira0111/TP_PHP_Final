@@ -17,10 +17,6 @@ class Media
         $this->hydrate($data);
     }
 
-    /**
-     * Hydrate l'objet à partir d'un tableau associatif issu de la BDD.
-     * Cas particulier : la colonne "media_id" correspond au setter setId().
-     */
     public function hydrate(array $data): void
     {
         if (isset($data['media_id'])) {

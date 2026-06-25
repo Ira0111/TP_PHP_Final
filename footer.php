@@ -24,7 +24,7 @@
   </div>
 </footer>
 
-<script src="assets/script.js"></script>
+<script src="assets/js/script.js"></script>
 </body>
 
 </html>

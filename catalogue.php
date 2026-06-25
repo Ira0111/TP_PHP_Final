@@ -36,5 +36,5 @@ $type = $_GET['type'] ?? 'all';
     </div>
 </section>
 
-<script src="assets/catalogue.js"></script>
+<script src="assets/js/catalogue.js"></script>
 <?php require_once 'footer.php'; ?>

@@ -28,20 +28,19 @@ class MediaController
                     AND f.user_id = :user_id';
 
         $params = ['user_id' => $userId];
-
         $conditions = [];
 
-        if ($type !== null && $type !== '') {
+        if (!empty($type)) {
             $conditions[] = 'm.type = :type';
             $params['type'] = $type;
         }
 
-        if ($search !== null && $search !== '') {
+        if (!empty($search)) {
             $conditions[] = 'm.title LIKE :search';
             $params['search'] = '%' . $search . '%';
         }
 
-        if (!empty($conditions)) {
+        if ($conditions) {
             $sql .= ' WHERE ' . implode(' AND ', $conditions);
         }
 
@@ -64,22 +63,33 @@ class MediaController
         return $results;
     }
 
-    /**
-     * Récupère un média par son id.
-     */
     public function getById(int $id): ?Media
     {
         $stmt = $this->pdo->prepare('SELECT * FROM media WHERE media_id = :id');
         $stmt->execute(['id' => $id]);
 
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
         return $data ? new Media($data) : null;
     }
 
-    /**
-     * Crée un nouveau média (réservé aux admins).
-     */
+    public function getByApi(string $api_id, string $api_source): ?Media
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT * FROM media
+            WHERE api_id = :api_id
+            AND api_source = :api_source
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'api_id'      => $api_id,
+            'api_source'  => $api_source
+        ]);
+
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $data ? new Media($data) : null;
+    }
+
     public function create(Media $media): bool
     {
         $stmt = $this->pdo->prepare(
@@ -98,9 +108,6 @@ class MediaController
         ]);
     }
 
-    /**
-     * Met à jour un média existant (réservé aux admins).
-     */
     public function update(Media $media): bool
     {
         $stmt = $this->pdo->prepare(
@@ -122,9 +129,6 @@ class MediaController
         ]);
     }
 
-    /**
-     * Supprime un média (réservé aux admins).
-     */
     public function delete(int $id): bool
     {
         $stmt = $this->pdo->prepare('DELETE FROM media WHERE media_id = :id');
