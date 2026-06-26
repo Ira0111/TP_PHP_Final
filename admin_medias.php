@@ -111,13 +111,13 @@ if ($status === 'error') $message = "Une erreur est survenue lors de l'opératio
                                         <button class="btn-outline btn-xs" 
                                                 onclick="editMedia(<?= $m['media_id'] ?>, '<?= htmlspecialchars(addslashes($m['title'])) ?>', '<?= $m['type'] ?>', '<?= htmlspecialchars($m['api_id']) ?>')"
                                                 style="cursor: pointer; padding: 0.4rem 0.8rem;">
-                                            ✏️ Éditer
+                                            Éditer
                                         </button>
 
                                         <form action="admin_action.php" method="post" onsubmit="return confirm('Es-tu sûr de vouloir supprimer définitivement ce média ?');" style="display: inline;">
                                             <input type="hidden" name="media_id" value="<?= $m['media_id'] ?>">
                                             <button type="submit" name="action" value="delete" class="btn-primary btn-xs" style="background: #ff4757; cursor: pointer; padding: 0.4rem 0.8rem;">
-                                                🗑️ Supprimer
+                                                Supprimer
                                             </button>
                                         </form>
 
@@ -136,7 +136,7 @@ if ($status === 'error') $message = "Une erreur est survenue lors de l'opératio
 <script>
 // Fonction appelée au clic sur "Éditer" pour faire passer le formulaire en mode Modification
 function editMedia(id, title, type, apiId) {
-    document.getElementById('form-title').textContent = "✏️ Modifier le média #" + id;
+    document.getElementById('form-title').textContent = "Modifier le média #" + id;
     document.getElementById('form-media-id').value = id;
     document.getElementById('form-title-input').value = title;
     document.getElementById('form-type').value = type;

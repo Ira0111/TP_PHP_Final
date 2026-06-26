@@ -129,7 +129,7 @@ function fetchPosterFromApi(string $type, string $id): string
                 $prenom = $segments[0];
             }
             ?>
-            <p class="hero__eyebrow">Ravi de te revoir, <?= htmlspecialchars($prenom) ?> ! 👋</p>
+            <p class="hero__eyebrow">Ravi de te revoir, <?= htmlspecialchars($prenom) ?> !</p>
             <h1 class="hero__title">
                 Tes suivis<br>
                 <span>en ce moment.</span>
@@ -165,7 +165,7 @@ function fetchPosterFromApi(string $type, string $id): string
     <section class="section user-watching">
         <div class="container">
             <div class="section__header">
-                <h2 class="section__title">🎬 Continuer à regarder / lire</h2>
+                <h2 class="section__title">Continuer à regarder / lire</h2>
             </div>
 
             <?php if (!empty($enCoursEntries)): ?>
