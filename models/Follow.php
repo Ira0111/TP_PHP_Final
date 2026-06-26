@@ -6,7 +6,7 @@ class Follow
     private int $user_id;
     private int $media_id;
     private string $status;
-    private ?int $progress_detail;
+    private ?string $progress_detail;
     private string $created_at;
     private string $updated_at;
     private string $type;
@@ -37,7 +37,7 @@ class Follow
     {
         return $this->status;
     }
-    public function getProgress_detail(): ?int
+    public function getProgress_detail(): ?string
     {
         return $this->progress_detail;
     }
@@ -72,7 +72,7 @@ class Follow
     }
     public function setProgress_detail($v)
     {
-        $this->progress_detail = $v !== null ? (int)$v : null;
+        $this->progress_detail = $v !== null ? (string)$v : null;
     }
     public function setCreated_at($v)
     {

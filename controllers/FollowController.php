@@ -8,16 +8,11 @@ class FollowController
 
     public function __construct()
     {
-        global $pdo;
-
-        if (!($pdo instanceof PDO)) {
-            throw new Exception("Connexion PDO non initialisée.");
-        }
-
-        $this->pdo = $pdo;
+        require_once __DIR__ . '/../config/database.php';
+        $this->pdo = getPDO();
     }
 
-    /* Vérifie si un média est terminé */
+    // Vérifie si un média est terminé
     public function hasCompleted(int $user_id, int $media_id): bool
     {
         $stmt = $this->pdo->prepare("
@@ -28,7 +23,7 @@ class FollowController
         return (bool) $stmt->fetchColumn();
     }
 
-    /* Récupère un follow */
+    // Récupère un follow
     public function get(int $user_id, int $media_id): ?Follow
     {
         $stmt = $this->pdo->prepare("
@@ -41,23 +36,23 @@ class FollowController
         return $data ? new Follow($data) : null;
     }
 
-    /* Crée un follow */
+    // Crée un follow
     public function create(Follow $follow): bool
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO follow (user_id, media_id, status, progress_detail, created_at, update_at)
-            VALUES (:u, :m, :s, :d, NOW(), NOW())
+            INSERT INTO follow (status, progress_detail, update_at, user_id, media_id)
+            VALUES (:s, :d, NOW(), :u, :m)
         ");
 
         return $stmt->execute([
-            'u' => $follow->getUser_id(),
-            'm' => $follow->getMedia_id(),
             's' => $follow->getStatus(),
             'd' => $follow->getProgress_detail(), // peut être null
+            'u' => $follow->getUser_id(),
+            'm' => $follow->getMedia_id(),
         ]);
     }
 
-    /* Met à jour un follow */
+    // Met à jour un follow (par user + media)
     public function update(Follow $follow): bool
     {
         $stmt = $this->pdo->prepare("
@@ -69,13 +64,14 @@ class FollowController
         ");
 
         return $stmt->execute([
-            'u' => $follow->getUser_id(),
-            'm' => $follow->getMedia_id(),
             's' => $follow->getStatus(),
             'd' => $follow->getProgress_detail(), // peut être null
+            'u' => $follow->getUser_id(),
+            'm' => $follow->getMedia_id(),
         ]);
     }
 
+    // Supprime un follow
     public function delete(int $user_id, int $media_id): bool
     {
         $stmt = $this->pdo->prepare("

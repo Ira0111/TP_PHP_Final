@@ -62,18 +62,19 @@ try {
     $media = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$media) {
+        // CORRECTION : Utilisation des vrais noms de colonnes (poster au lieu de image)
         $ins = $pdo->prepare(
             'INSERT INTO media
-             (title, type, image, date, created_at, api_id, api_source,
+             (api_id, api_source, type, title, poster, date, created_at,
               duration_minutes, total_seasons, total_episodes, total_pages)
-             VALUES (?, ?, ?, CURDATE(), NOW(), ?, ?, ?, ?, ?, ?)'
+             VALUES (?, ?, ?, ?, ?, CURDATE(), NOW(), ?, ?, ?, ?)'
         );
         $ins->execute([
-            $title,
-            $typeDB,
-            $poster,
             $apiId,
             $apiSource,
+            $typeDB,
+            $title,
+            $poster,
             $durationMinutes,
             $totalSeasons,
             $totalEpisodes,
@@ -114,10 +115,36 @@ try {
             'UPDATE follow SET status = ?, update_at = NOW() WHERE follow_id = ?'
         )->execute([$status, $existing['follow_id']]);
     } else {
+        // Initialisation de la progression textuelle de départ selon le type
+        $defaultProgress = null;
+
+        if ($status === 'watching') {
+            if ($typeDB === 'serie' || $typeDB === 'anime') {
+                $defaultProgress = "Saison 1 · Épisode 1";
+            } elseif ($typeDB === 'book') {
+                $defaultProgress = "Page 0";
+                if ($totalPages !== null && $totalPages > 0) {
+                    $defaultProgress .= " / " . $totalPages;
+                }
+            } elseif ($typeDB === 'movie') {
+                $defaultProgress = "Timecode : 00:00";
+            }
+        }
+
+        if ($status === 'completed' && $typeDB === 'book' && $totalPages !== null && $totalPages > 0) {
+            $defaultProgress = "Page " . $totalPages . " / " . $totalPages;
+        }
+
         $pdo->prepare(
-            'INSERT INTO follow (status, progress, update_at, user_id, media_id)
-             VALUES (?, 0, NOW(), ?, ?)'
-        )->execute([$status, $userId, $mediaId]);
+            'INSERT INTO follow (status, progress_detail, update_at, user_id, media_id)
+             VALUES (?, ?, NOW(), ?, ?)'
+        )->execute([$status, $defaultProgress, $userId, $mediaId]);
+    }
+
+    // RÈGLE 1 : Si le statut change ou est ajouté sans être 'completed', on supprime l'avis associé
+    if ($status !== 'completed') {
+        $pdo->prepare('DELETE FROM review WHERE user_id = ? AND media_id = ?')
+            ->execute([$userId, $mediaId]);
     }
 
     echo json_encode(['success' => true]);

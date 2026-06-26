@@ -129,9 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
 
             const followId = btn.dataset.followId;
-            const type = btn.dataset.type;      // film | serie | anime | jeu | livre
+            const type = btn.dataset.type;
             const title = btn.dataset.title;
-            const status = btn.dataset.status;    // watching | on_hold | plan_to_watch | completed | dropped
+            const status = btn.dataset.status;
             const detail = btn.dataset.detail || '';
 
             console.log("[KUL] Ouverture popup", { followId, type, title, status, detail });
@@ -141,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
             fFollowId.value = followId;
             fType.value = type;
 
-            /* IMPORTANT : affecter fStatus.value AVANT updateFieldEditability() */
             fStatus.value = status;
 
             /* Remise à zéro de tous les champs */

@@ -4,18 +4,27 @@ const API_KEYS = {
   books: 'AIzaSyDMuRrZ1LKaDFnZ13NPPV2V0yJ63to_tUo',
 };
 
+// Variable globale pour mémoriser les informations récoltées depuis l'API externe
+let currentMediaData = null;
+
 /* ─────────────────────────────────────────────
    Point d'entrée
 ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    console.log("[KUL] Initialisation de la page. Type :", MEDIA_TYPE, "| ID :", MEDIA_ID);
     const data = await fetchMedia(MEDIA_TYPE, MEDIA_ID);
+
+    // Sauvegarde globale des données récoltées
+    currentMediaData = data;
+    console.log("[KUL] Données de l'API sauvegardées en global :", currentMediaData);
+
     renderMedia(MEDIA_TYPE, data);
     initFollowBtn();
     await loadCommunityData(MEDIA_TYPE, MEDIA_ID);
     await checkIfFollowed(MEDIA_TYPE, MEDIA_ID);
   } catch (e) {
-    console.error('media.js error:', e);
+    console.error('[KUL] media.js error:', e);
     showError();
   }
 });
@@ -84,6 +93,8 @@ async function fetchTMDB(tmdbType, id) {
   if (!res.ok) throw new Error('TMDB error');
   const d = await res.json();
 
+  console.log("[KUL] Réponse brute TMDB reçue :", d);
+
   let overview = d.overview || 'Aucune description disponible.';
   if (isEnglish(overview)) overview = await translateToFrench(overview);
 
@@ -98,8 +109,11 @@ async function fetchTMDB(tmdbType, id) {
       : `${d.number_of_seasons ?? '?'} saison(s) · ${d.number_of_episodes ?? '?'} épisodes`,
     extraInfo: buildTMDBExtra(d, tmdbType),
     durationMinutes: tmdbType === 'movie' ? (d.runtime || null) : null,
-    totalSeasons: tmdbType === 'tv' ? (d.number_of_seasons || null) : null,
-    totalEpisodes: tmdbType === 'tv' ? (d.number_of_episodes || null) : null,
+    // Permet une double compatibilité de secours sur les noms des propriétés
+    totalSeasons: d.number_of_seasons || null,
+    totalEpisodes: d.number_of_episodes || null,
+    number_of_seasons: d.number_of_seasons || null,
+    number_of_episodes: d.number_of_episodes || null
   };
 }
 
@@ -165,6 +179,7 @@ async function fetchBooks(id) {
     extra: i.pageCount ? i.pageCount + ' pages' : '',
     extraInfo: buildBooksExtra(i),
     totalPages: i.pageCount || null,
+    pageCount: i.pageCount || null
   };
 }
 
@@ -222,9 +237,9 @@ function renderMedia(type, data) {
     poster: data.poster,
     year: data.year,
     durationMinutes: data.durationMinutes || null,
-    totalSeasons: data.totalSeasons || null,
-    totalEpisodes: data.totalEpisodes || null,
-    totalPages: data.totalPages || null,
+    totalSeasons: data.totalSeasons || data.number_of_seasons || null,
+    totalEpisodes: data.totalEpisodes || data.number_of_episodes || null,
+    totalPages: data.totalPages || data.pageCount || null,
   };
 }
 
@@ -244,28 +259,58 @@ function initFollowBtn() {
     btn.disabled = true;
     btn.textContent = 'Enregistrement…';
 
+    let totalSeasons = null;
+    let totalEpisodes = null;
+    let totalPages = null;
+
+    // Analyse approfondie de la source globale ou de la structure window secondaire
+    if (currentMediaData) {
+      if (MEDIA_TYPE === 'serie' || MEDIA_TYPE === 'anime') {
+        totalSeasons = currentMediaData.totalSeasons || currentMediaData.number_of_seasons || null;
+        totalEpisodes = currentMediaData.totalEpisodes || currentMediaData.number_of_episodes || null;
+      } else if (MEDIA_TYPE === 'livre') {
+        totalPages = currentMediaData.totalPages || currentMediaData.pageCount || null;
+      }
+    }
+
+    // Sécurité de secours via l'objet window._mediaData si configuré par le render
+    if (!totalSeasons && window._mediaData) {
+      totalSeasons = window._mediaData.totalSeasons || null;
+      totalEpisodes = window._mediaData.totalEpisodes || null;
+      totalPages = window._mediaData.totalPages || null;
+    }
+
+    const payload = {
+      api_id: MEDIA_ID,
+      api_source: getApiSource(MEDIA_TYPE),
+      type: MEDIA_TYPE,
+      title: currentMediaData?.title || window._mediaData?.title || '',
+      poster: currentMediaData?.poster || window._mediaData?.poster || '',
+      status,
+      total_seasons: totalSeasons,
+      total_episodes: totalEpisodes,
+      total_pages: totalPages
+    };
+
+    console.log("[KUL] Clic bouton suivi. Payload envoyé ->", payload);
+
     try {
       const res = await fetch('followAction.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          api_id: MEDIA_ID,
-          api_source: getApiSource(MEDIA_TYPE),
-          type: MEDIA_TYPE,
-          title: window._mediaData?.title || '',
-          poster: window._mediaData?.poster || '',
-          status,
-        }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
+      console.log("[KUL] Réponse reçue de followAction.php :", json);
+
       if (json.success) {
         showMsg(msg, '✓ Ajouté à ta liste !', 'success');
-        // Active le formulaire de review
         enableReviewForm();
       } else {
         showMsg(msg, json.error || 'Erreur serveur.', 'error');
       }
-    } catch {
+    } catch (err) {
+      console.error("[KUL] Erreur réseau lors de l'enregistrement :", err);
       showMsg(msg, 'Erreur réseau.', 'error');
     } finally {
       btn.disabled = false;
@@ -280,7 +325,6 @@ async function checkIfFollowed(type, id) {
     const res = await fetch(`models/checkFollow.php?type=${type}&id=${id}`);
     const data = await res.json();
     if (data.follow) {
-      // Déjà suivi → met à jour le select et active la review
       const select = document.getElementById('follow-status');
       if (select && data.status) select.value = data.status;
       enableReviewForm();
@@ -336,13 +380,11 @@ async function loadCommunityData(type, id) {
   try {
     const res = await fetch(`models/getCommunityData.php?type=${type}&id=${encodeURIComponent(id)}&t=${Date.now()}`);
     const data = await res.json();
-    console.log("DATA REÇUE =", data);
+    console.log("[KUL] Données communauté reçues :", data);
 
     document.getElementById("reviews-section").style.display = "block";
-    // Affiche la section
     if (section) section.style.display = '';
 
-    // Note moyenne
     if (ratingEl) {
       if (data.rating && data.rating.total > 0) {
         const avg = parseFloat(data.rating.avg_note).toFixed(1);
@@ -354,7 +396,6 @@ async function loadCommunityData(type, id) {
       }
     }
 
-    // Formulaire : activé seulement si le média est en BDD
     if (USER_ID) {
       if (data.media_id) {
         enableReviewForm();
@@ -363,13 +404,11 @@ async function loadCommunityData(type, id) {
       }
     }
 
-    // Pré-remplir le form si l'user a déjà noté
     if (USER_ID && data.comments.length) {
       const mine = data.comments.find(c => c.is_mine);
       if (mine) prefillReviewForm(mine);
     }
 
-    // Liste des commentaires
     if (!commentsEl) return;
 
     if (!data.comments.length) {
@@ -379,33 +418,26 @@ async function loadCommunityData(type, id) {
 
     commentsEl.innerHTML = data.comments.map(c => `
       <div class="review-card">
-
           <div class="review-card__header">
               <span class="review-card__avatar">
                   ${c.is_mine && USER_INITIALS ? USER_INITIALS : c.username.charAt(0).toUpperCase()}
               </span>
-
               <div class="review-card__meta">
                   <span class="review-card__date">${c.created_at}</span>
               </div>
-
               <div class="review-card__hearts">
                   ${renderHearts(c.note, 5)}
               </div>
           </div>
-
           ${c.comment ? `
               <p class="review-card__comment">${escHtml(c.comment)}</p>
           ` : ''}
-
           ${(c.is_mine || IS_ADMIN) ? `
               <div class="review-card__actions">
-
                   <button type="button" class="btn-edit"
                       onclick="openEditReview(${c.review_id}, ${c.note}, \`${escHtml(c.comment)}\`)">
                       Modifier
                   </button>
-
                   <form action="review_delete.php" method="post" class="review-card__delete">
                       <input type="hidden" name="review_id" value="${c.review_id}">
                       <input type="hidden" name="api_id"    value="${MEDIA_ID}">
@@ -415,34 +447,26 @@ async function loadCommunityData(type, id) {
                           Supprimer
                       </button>
                   </form>
-
               </div>
           ` : ''}
-
       </div>
     `).join('');
 
-
   } catch (err) {
-    console.error('loadCommunityData error:', err);
+    console.error('[KUL] loadCommunityData error:', err);
     if (ratingEl) ratingEl.style.display = 'none';
     if (commentsEl) commentsEl.innerHTML = '<p>Impossible de charger les avis.</p>';
     if (section) section.style.display = '';
   }
-  console.log("MEDIA.JS PROPRE");
 }
 
 function openEditReview(id, note, comment) {
-  console.log("OPEN POPUP OK");
-
+  console.log("[KUL] Ouverture popup modification avis.");
   const popup = document.getElementById("editReviewPopup");
-
   document.getElementById("popupReviewId").value = id;
   document.getElementById("popupNote").value = note;
   document.getElementById("popupComment").value = comment;
-
   updatePopupHearts(note);
-
   popup.style.display = "flex";
 }
 
@@ -452,7 +476,6 @@ function closeEditReview() {
 
 function updatePopupHearts(note) {
   const hearts = document.querySelectorAll("#popupRatingWidget .rating-heart");
-
   hearts.forEach(h => {
     const value = parseInt(h.dataset.value);
     h.src = value <= note
@@ -469,14 +492,11 @@ document.querySelectorAll("#popupRatingWidget .rating-heart").forEach(h => {
   });
 });
 
-
-
-/* Pré-remplit le formulaire si l'utilisateur a déjà noté */
 function prefillReviewForm(review) {
   const formTitle = document.getElementById('review-form-title');
   const submit = document.getElementById('review-submit');
   const textarea = document.querySelector('#review-form textarea');
-  const radio = document.querySelector(`#review-form input[name="note"][value="${review.note}"]`);
+  const radio = document.querySelector(`#review-form input[name=\"note\"][value=\"${review.note}\"]`);
 
   if (formTitle) formTitle.textContent = 'Modifier mon avis';
   if (submit) submit.textContent = 'Mettre à jour';
@@ -484,7 +504,6 @@ function prefillReviewForm(review) {
   if (radio) radio.checked = true;
 }
 
-/* ─── Helpers HTML ─── */
 function renderHearts(note, max = 5) {
   const n = parseFloat(note);
   let html = '';
